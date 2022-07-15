@@ -326,9 +326,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 	
 	//Restart Receive process
 	//HAL_UART_AbortReceive(&RS485_huart2);
-	RS485_Driver_RecevieMode();
-	memset(Modbus_Receive_pkg.BUS_Array,0,100);
-	HAL_UART_Receive_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+//	RS485_Driver_RecevieMode();
+//	memset(Modbus_Receive_pkg.BUS_Array,0,100);
+//	HAL_UART_Receive_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
 	
 }
 /**

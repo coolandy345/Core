@@ -41,7 +41,8 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+extern osThreadId ADS1247_TaskHandle;
+extern osThreadId ADC_TaskHandle;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -65,6 +66,8 @@ extern int UART_errorcounter;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+//#define MASTER
+
 #define Analog_IN_FeedBack_s_Pin GPIO_PIN_3
 #define Analog_IN_FeedBack_s_GPIO_Port GPIOC
 #define TIM2_CCCV_Control_Pin GPIO_PIN_3

@@ -21,7 +21,7 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "ADS1247.h"
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -163,6 +163,21 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi){
+
+	ADS1247_TxRxCpltCallback();
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi){
+	
+}
+
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi){
+	
+	
+}
+
 //HAL_SPI_RxCpltCallback
 //HAL_SPI_TxCpltCallback
 //HAL_SPI_TxRxCpltCallback

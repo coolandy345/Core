@@ -29,7 +29,7 @@
 /* Configure GPIO                                                             */
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
-
+uint8_t option_state;
 /* USER CODE END 1 */
 
 /** Configure pins as
@@ -54,54 +54,42 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(SPI1_SS_ADC_GPIO_Port, SPI1_SS_ADC_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, ADC_Start_Pin|UART5_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ADC_Start_GPIO_Port, ADC_Start_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MCU_CCCV_SELECT_Pin|MCU_FAULT_Pin|MCU_PWR_ENABLE_Pin
-                          |USART1_EN_Pin, GPIO_PIN_RESET);
-  
+  HAL_GPIO_WritePin(ADC_Reset_GPIO_Port, ADC_Reset_Pin, GPIO_PIN_SET);
+
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ADC_Reset_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, MCU_CCCV_SELECT_Pin|MCU_FAULT_Pin|MCU_PWR_ENABLE_Pin|USART1_EN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(UART5_EN_GPIO_Port, UART5_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = SPI1_SS_ADC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(SPI1_SS_ADC_GPIO_Port, &GPIO_InitStruct);
-  
-  /*Configure GPIO pins : PCPin PCPin PCPin */
+
+  /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = ADC_Ready_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PCPin PCPin PCPin */
-  GPIO_InitStruct.Pin = PWR_INTERLOCK_Pin|PWR_FAULT_INDICATION_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(ADC_Ready_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = ADC_Start_Pin|UART5_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin */
-  GPIO_InitStruct.Pin = MCU_PWR_ENABLE_Pin;
+  /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
+  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_CCCV_SELECT_Pin|MCU_FAULT_Pin|MCU_PWR_ENABLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  
-  
-  /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_CCCV_SELECT_Pin|MCU_FAULT_Pin|USART1_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin */
@@ -117,6 +105,12 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(SYSTEM_FAULT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin */
+  GPIO_InitStruct.Pin = PWR_INTERLOCK_Pin|PWR_FAULT_INDICATION_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = Master_Select_Pin|CCCV_Select_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -127,6 +121,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = USART1_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(USART1_EN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
@@ -149,6 +150,8 @@ void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin==ADC_Ready_Pin){
+		
+		HAL_GPIO_WritePin(ADC_Start_GPIO_Port, ADC_Start_Pin, GPIO_PIN_RESET);
 		ADS1247_Ready_Callback();
 	}
 

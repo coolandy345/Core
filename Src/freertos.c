@@ -27,6 +27,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "ADS1247.h"
+#include "adc.h"
+#include "Link_Manager.h"
+#include "Link_Master_Driver.h"
+#include "Link_Slave_Driver.h"
+#include "usart.h"
+#include "gpio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,22 +55,41 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
+osThreadId defaultTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+osThreadId ADS1247_TaskHandle;
+osThreadId ADC_TaskHandle;
+osThreadId Link_TaskHandle;
+osThreadId Test_TaskHandle;
 
+
+void ADS1247_TaskFunction(void const * argument);
+void ADC_TaskFunction(void const * argument);
+void Link_TaskFunction(void const * argument);
+void Test_TaskFunction(void const * argument);
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void *argument);
+void StartDefaultTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* GetIdleTaskMemory prototype (linked to static allocation support) */
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+
+/* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
+static StaticTask_t xIdleTaskTCBBuffer;
+static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+{
+  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+  /* place for user code */
+}
+/* USER CODE END GET_IDLE_TASK_MEMORY */
 
 /**
   * @brief  FreeRTOS initialization
@@ -92,16 +118,24 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  osThreadDef(ADS1247_Task, ADS1247_TaskFunction, osPriorityNormal, 0, 128);
+  ADS1247_TaskHandle = osThreadCreate(osThread(ADS1247_Task), NULL);
+  
+  osThreadDef(ADC_Task, ADC_TaskFunction, osPriorityNormal, 0, 128);
+  ADC_TaskHandle = osThreadCreate(osThread(ADC_Task), NULL);
+  
+  osThreadDef(Link_Task, Link_TaskFunction, osPriorityNormal, 0, 128);
+  Link_TaskHandle = osThreadCreate(osThread(Link_Task), NULL);
+  
+  osThreadDef(Test_Task, Test_TaskFunction, osPriorityNormal, 0, 128);
+  Test_TaskHandle = osThreadCreate(osThread(Test_Task), NULL);
   /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -112,13 +146,22 @@ void MX_FREERTOS_Init(void) {
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+	option_state=	HAL_GPIO_ReadPin(Master_Select_GPIO_Port,Master_Select_Pin)<<5	|
+					HAL_GPIO_ReadPin(CCCV_Select_GPIO_Port,CCCV_Select_Pin)<<4		|
+					HAL_GPIO_ReadPin(MODBUS_ADD_4_GPIO_Port,MODBUS_ADD_4_Pin)<<3	|
+					HAL_GPIO_ReadPin(MODBUS_ADD_3_GPIO_Port,MODBUS_ADD_3_Pin)<<2	|
+					HAL_GPIO_ReadPin(MODBUS_ADD_2_GPIO_Port,MODBUS_ADD_2_Pin)<<1	|
+					HAL_GPIO_ReadPin(MODBUS_ADD_1_GPIO_Port,MODBUS_ADD_1_Pin)<<0	;
+	option_state=~option_state;
+	
+	Link_Manager_Init();
+	
   /* Infinite loop */
   for(;;)
   {
-	  test[0]++;
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -126,6 +169,80 @@ void StartDefaultTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void ADS1247_TaskFunction(void const * argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+	ADS1247_Init();
+  /* Infinite loop */
+  for(;;)
+  {
+	  ADS1247_Process();
+  }
+  /* USER CODE END StartDefaultTask */
+}
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void ADC_TaskFunction(void const * argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+	
+  /* Infinite loop */
+  for(;;)
+  {
+	  ADC_Process();
+	  osDelay(10);
+  }
+  /* USER CODE END StartDefaultTask */
+}
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void Link_TaskFunction(void const * argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+	Link_Master_Initial();
+	Link_Slave_Initial();
+  /* Infinite loop */
+  for(;;)
+  {
+	  Link_Master_Process();
+	  Link_Slave_Process();
+	  osDelay(10);
+  }
+  /* USER CODE END StartDefaultTask */
+}
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void Test_TaskFunction(void const * argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+	uint8_t data_buffer[]={0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA};
+  /* Infinite loop */
+  for(;;)
+  {
+	  HAL_UART_Transmit_DMA(&huart5, data_buffer, 10);
+	  osDelay(100);
+  }
+  /* USER CODE END StartDefaultTask */
+}
 
 /* USER CODE END Application */
 

@@ -28,7 +28,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+extern uint8_t option_state;
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */

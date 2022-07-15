@@ -53,6 +53,7 @@
 /* USER CODE BEGIN PV */
 int hard_fault;
 int test[10];
+uint16_t utest[10];
 float test_float[10];
 int UART_errorcounter;
 /* USER CODE END PV */
@@ -92,30 +93,32 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+	MX_DMA_Init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
 //  MX_IWDG_Init();
   MX_SPI1_Init();
-  MX_TIM2_Init();
   MX_UART5_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_DMA_Init();
+//  MX_DMA_Init();
   MX_CRC_Init();
   MX_USART1_UART_Init();
   MX_TIM10_Init();
   MX_TIM11_Init();
   MX_TIM12_Init();
+  MX_TIM7_Init();
+  MX_TIM8_Init();
+  MX_TIM9_Init();
+  MX_TIM13_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-  ADS1247_Init();
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
   /* Start scheduler */
   osKernelStart();
@@ -177,14 +180,14 @@ void SystemClock_Config(void)
 
 /* USER CODE END 4 */
 
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+///**
+//  * @brief  Period elapsed callback in non blocking mode
+//  * @note   This function is called  when TIM1 interrupt took place, inside
+//  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+//  * a global variable "uwTick" used as application time base.
+//  * @param  htim : TIM handle
+//  * @retval None
+//  */
 //void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //{
 //  /* USER CODE BEGIN Callback 0 */
