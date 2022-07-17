@@ -56,7 +56,7 @@ enum Link_Status
 
 
 
-extern struct Unit_Status { 
+typedef struct Unit_Status { 
 
     Link_Status     link_Status;
     Operate_State   operate_State;
