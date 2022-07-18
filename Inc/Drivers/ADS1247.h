@@ -195,6 +195,14 @@ The IMAG bits control the magnitude of the excitation current. The IDACs require
 #define 	SYSGCAL		0x61	//System Gain Calibration
 #define 	SELFOCAL	0x62	//Self Offset Calibration
 
+typedef enum{
+      ADC_Current=0, 
+      ADC_Voltage,
+      ADC_4_20,
+      ADC_Limit
+	
+}ADC_Pos_typedef;
+
 typedef struct ADC_pkg_typedef{
 	
 	uint16_t 					Data_length;
@@ -206,6 +214,7 @@ typedef struct ADC_pkg_typedef{
 	
 }ADC_pkg_typedef;
 
+extern float ADC_Value[4];
 extern uint8_t 	ADC_DRDY_signals;
 extern void ADS1247_Init(void);
 extern void ADS1247_Process(void);

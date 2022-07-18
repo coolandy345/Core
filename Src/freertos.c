@@ -34,6 +34,7 @@
 #include "Link_Slave_Driver.h"
 #include "usart.h"
 #include "gpio.h"
+#include "IPR100D30_Parameter.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -149,15 +150,9 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-	option_state=	HAL_GPIO_ReadPin(Master_Select_GPIO_Port,Master_Select_Pin)<<5	|
-					HAL_GPIO_ReadPin(CCCV_Select_GPIO_Port,CCCV_Select_Pin)<<4		|
-					HAL_GPIO_ReadPin(MODBUS_ADD_4_GPIO_Port,MODBUS_ADD_4_Pin)<<3	|
-					HAL_GPIO_ReadPin(MODBUS_ADD_3_GPIO_Port,MODBUS_ADD_3_Pin)<<2	|
-					HAL_GPIO_ReadPin(MODBUS_ADD_2_GPIO_Port,MODBUS_ADD_2_Pin)<<1	|
-					HAL_GPIO_ReadPin(MODBUS_ADD_1_GPIO_Port,MODBUS_ADD_1_Pin)<<0	;
-	option_state=~option_state;
 	
-	Link_Manager_Init();
+	
+	IPR_Init();
 	
   /* Infinite loop */
   for(;;)

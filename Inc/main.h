@@ -81,8 +81,8 @@ extern int UART_errorcounter;
 #define ADC_Start_GPIO_Port GPIOC
 #define ADC_Reset_Pin GPIO_PIN_0
 #define ADC_Reset_GPIO_Port GPIOB
-#define MCU_CCCV_SELECT_Pin GPIO_PIN_2
-#define MCU_CCCV_SELECT_GPIO_Port GPIOB
+#define MCU_PWR_REM_Pin GPIO_PIN_2
+#define MCU_PWR_REM_GPIO_Port GPIOB
 #define USER_ENABLE_Pin GPIO_PIN_10
 #define USER_ENABLE_GPIO_Port GPIOB
 #define SYSTEM_FAULT_Pin GPIO_PIN_11

@@ -29,7 +29,7 @@
 /* Configure GPIO                                                             */
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
-uint8_t option_state;
+
 /* USER CODE END 1 */
 
 /** Configure pins as
@@ -60,7 +60,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ADC_Reset_GPIO_Port, ADC_Reset_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MCU_CCCV_SELECT_Pin|MCU_NO_FAULT_Pin|MCU_PWR_ENABLE_Pin|USART1_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, MCU_PWR_REM_Pin|MCU_PWR_ENABLE_Pin|USART1_EN_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(MCU_NO_FAULT_GPIO_Port, MCU_NO_FAULT_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(UART5_EN_GPIO_Port, UART5_EN_Pin, GPIO_PIN_RESET);
@@ -86,7 +89,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_CCCV_SELECT_Pin|MCU_NO_FAULT_Pin|MCU_PWR_ENABLE_Pin;
+  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_PWR_REM_Pin|MCU_NO_FAULT_Pin|MCU_PWR_ENABLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
