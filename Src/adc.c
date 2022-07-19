@@ -19,12 +19,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "adc.h"
+#include "IPR100D30_Parameter.h"
+
 
 /* USER CODE BEGIN 0 */
 uint16_t ADC_RAW[3];
-float Voltage_Feedback;
-float MCU_Temperature;
-float MCU_Reference;
 float ADC_RAW_Smooth[3];
 float Smooth_Factor=0.001;
 float ADC_Voltage_Smooth[3];
@@ -184,9 +183,11 @@ void ADC_Process(void){
 	for(int i=0;i<3;i++){
 		ADC_Voltage_Smooth[i]=ADC_RAW_Smooth[i]*3.3/0xFFF;
 	}
-	Voltage_Feedback=3.45*ADC_Voltage_Smooth[0]-0.696;
-	MCU_Reference=ADC_Voltage_Smooth[1];
-	MCU_Temperature=((ADC_Voltage_Smooth[2]-0.76)/(float)0.0025)+25;
+	Unit_Status.PWR_Status.Voltage_Feedback=3.45*ADC_Voltage_Smooth[0]-0.696;
+	Unit_Status.MCU_Status.MCU_Reference=ADC_Voltage_Smooth[1];
+	Unit_Status.MCU_Status.MCU_Temperature=((ADC_Voltage_Smooth[2]-0.76)/(float)0.0025)+25;
+	
+	
 
 }
 /* USER CODE END 1 */

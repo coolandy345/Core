@@ -60,7 +60,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ADC_Reset_GPIO_Port, ADC_Reset_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MCU_PWR_REM_Pin|MCU_PWR_ENABLE_Pin|USART1_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, MCU_PWR_REMOTE_Pin|MCU_PWR_ENABLE_Pin|USART1_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(MCU_NO_FAULT_GPIO_Port, MCU_NO_FAULT_Pin, GPIO_PIN_SET);
@@ -89,16 +89,22 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_PWR_REM_Pin|MCU_NO_FAULT_Pin|MCU_PWR_ENABLE_Pin;
+  GPIO_InitStruct.Pin = ADC_Reset_Pin|MCU_PWR_REMOTE_Pin|MCU_NO_FAULT_Pin|MCU_PWR_ENABLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = USER_ENABLE_Pin|PWR_REMOTE_INDICATION_Pin|PWR_OUTPUT_ON_INDICATION_Pin;
+  /*Configure GPIO pins : PBPin */
+  GPIO_InitStruct.Pin = USER_ENABLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  
+  /*Configure GPIO pins : PBPin PBPin PBPin */
+  GPIO_InitStruct.Pin = PWR_REMOTE_INDICATION_Pin|PWR_OUTPUT_ON_INDICATION_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
@@ -108,21 +114,27 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(SYSTEM_FAULT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin */
-  GPIO_InitStruct.Pin = PWR_INTERLOCK_Pin|PWR_FAULT_INDICATION_Pin;
+  GPIO_InitStruct.Pin = PWR_INTERLOCK_INDICATION_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  
+  /*Configure GPIO pins : PCPin PCPin */
+  GPIO_InitStruct.Pin = PWR_FAULT_INDICATION_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin */
   GPIO_InitStruct.Pin = Master_Select_Pin|CCCV_Select_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
   GPIO_InitStruct.Pin = MODBUS_ADD_1_Pin|MODBUS_ADD_2_Pin|MODBUS_ADD_3_Pin|MODBUS_ADD_4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */

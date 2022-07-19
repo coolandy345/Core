@@ -24,7 +24,6 @@
 #include "usart.h"
 uint32_t pwm_value[1];
 uint32_t priod_time_last,priod_time,duty_time;
-float duty;
 int timer4_Update;
 
 /* USER CODE END 0 */
@@ -135,7 +134,9 @@ void MX_TIM4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM4_Init 2 */
-  
+	HAL_TIM_Base_Start_IT(&htim4);
+	HAL_TIM_IC_Start_IT(&htim4,TIM_CHANNEL_3);
+	HAL_TIM_IC_Start_IT(&htim4,TIM_CHANNEL_4);
   /* USER CODE END TIM4_Init 2 */
 
 }
@@ -272,9 +273,9 @@ void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 0;
+  htim10.Init.Prescaler = 59;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 65535;
+  htim10.Init.Period = 9;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
@@ -282,7 +283,7 @@ void MX_TIM10_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM10_Init 2 */
-	HAL_TIM_Base_Start_IT(&htim10);
+	
   /* USER CODE END TIM10_Init 2 */
 
 }
@@ -341,9 +342,9 @@ void MX_TIM12_Init(void)
 
   /* USER CODE END TIM12_Init 1 */
   htim12.Instance = TIM12;
-  htim12.Init.Prescaler = 0;
+  htim12.Init.Prescaler = 59;
   htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim12.Init.Period = 65535;
+  htim12.Init.Period = 99;
   htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
@@ -372,9 +373,9 @@ void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 0;
+  htim13.Init.Prescaler = 59;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim13.Init.Period = 65535;
+  htim13.Init.Period = 99;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
@@ -398,9 +399,9 @@ void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 0;
+  htim14.Init.Prescaler = 5999;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim14.Init.Period = 65535;
+  htim14.Init.Period = 1999;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
@@ -831,12 +832,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM1) {
     HAL_IncTick();
-	}else if (htim->Instance == TIM10) {          //Modbus ReplyDelay 100us
+	}else if (htim->Instance == TIM13) {          //Modbus ReplyDelay 100us
 		
+		HAL_TIM_Base_Stop(&htim13);
+		__HAL_TIM_SET_COUNTER(&htim13, 0);
+		//Start Reply to Master
+		Link_TransmitMode();
+		HAL_UART_Transmit_DMA(&huart5,Link_Transmit_pkg.BUS_Array,Link_Transmit_pkg.BUS_length);
 		
-	}else if (htim->Instance == TIM4) {          //Modbus ReplyDelay 100us
+	}else if (htim->Instance == TIM12) {          //Modbus ReplyDelay 100us
+		
+		HAL_TIM_Base_Stop(&htim12);
+		__HAL_TIM_SET_COUNTER(&htim12, 0);
+		//Start Reply to Master
+		RS485_Driver_TransmitMode();
+		HAL_UART_Transmit_DMA(&huart1,Modbus_Transmit_pkg.BUS_Array,Modbus_Transmit_pkg.BUS_length);
+		
+	}else if (htim->Instance == TIM4) {          //
 		
 		timer4_Update++;
+	}else if (htim->Instance == TIM14) {          //Connection lost Safty timer 0.2s
+		
+		Lost_MasterConnection();
 	}
 }
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
@@ -854,7 +871,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 		timer4_Update=0;
 		priod_time_last=TIM4->CCR3 &0xFFFF;
 		
-		duty=100*(float)duty_time/(float)priod_time;
+		Unit_Status.Link_Status.Link_Duty=100*(float)duty_time/(float)priod_time;
+		
+		
 
 		
 	}else if(htim->Channel==HAL_TIM_ACTIVE_CHANNEL_4){

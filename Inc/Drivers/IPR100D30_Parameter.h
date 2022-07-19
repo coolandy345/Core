@@ -3,20 +3,24 @@
 
 #include "stm32f2xx_hal.h"
 #include <string.h>
+#include "cmsis_os.h"
 
 
-extern uint16_t SYS_Registor[12*16];
+extern uint16_t SYS_Registor[15*4];
 
 /** @defgroup Registor Map
   * @{
   */
 typedef enum{
-      SYS_SR1=0,
-      SYS_SR2,
+      SYS_SR=0,
+      MCU_TEMP,
       LINK_SR,
-      VOLTAGE,
-      CURRENT,
-      POWER,
+      VOLTAGE_H,
+      VOLTAGE_L,
+      CURRENT_H,
+      CURRENT_L,
+      POWER_H,
+      POWER_L,
 	  OUTPUT_CMD_H,
 	  OUTPUT_CMD_L,
       USR_CMD_H,
@@ -36,67 +40,91 @@ typedef enum {
 typedef enum{
       UnitERROR=0, 
       UnitIDLE, 
-      UnitSTANDBY, 
+      UnitSTANDBY,
       UnitRUN
 } Operate_State_typedef;
 
 typedef enum{
-      MASTER=0, 
+      MASTER=0,
       SLAVE
 }Link_Mode_typedef;
 
 typedef struct { 
-	float   Voltage,
-            Current,
-            Power;
+	double  Voltage,
+			Current,
+            Power,
+			Voltage_Feedback;
 	
-	int     PWR_Error,
-            PWR_Enable,
-            PWR_REM_Enable;
+	uint8_t PWR_Error,
+            PWR_REM_Enable,
+            PWR_REM_Indecate,
+			PWR_OUTPUT_Indecate,
+			PWR_INTERLOCK_Indecate;
 	
 }PWR_Status_typedef;
 
 typedef struct { 
 	Link_Mode_typedef  			Link_Mode;
 	Link_Connection_typedef   	Link_Connection;
-	int LINK_Node,
-        LINK_Number,
-		LINK_MaxNumber,
-		Link_Slave_Error,
-		Link_Master_Error;
+	
+	uint8_t Link_Node,
+			Link_Number,
+			Link_MaxNumber;
+	
+	double  Link_Duty;
+	
 }Link_Status_typedef;
 
 typedef struct { 
-	int MODBUS_ADDRESS;
+	uint8_t MODBUS_ADDRESS;
 	
 }Modbus_Status_typedef;
 
 typedef struct { 
-	float   User_Command,
+	double  User_Command,
 			User_Command_Current,
-            User_Limit;
-	int     USER_Start;
+            User_Limit,
+			User_Limit_Current;
+	uint8_t USER_Start;
 	
 }User_Status_typedef;
 
 typedef struct { 
+	Operate_State_typedef   	Operate_State;
+	uint8_t SYS_Error,
+			MCU_NO_ERROR,
+			MCU_PWR_ENABLE,
+			MCU_REM_ENABLE;
+	float	MCU_Temperature;
+	float	MCU_Reference;
+	double	Output_Current_Cmd;
+	
+}MCU_Status_typedef;
 
-    Operate_State_typedef   	Operate_State;
+typedef struct { 
+
+    
 	PWR_Status_typedef			PWR_Status;
 	Link_Status_typedef			Link_Status;
 	Modbus_Status_typedef		Modbus_Status;
 	User_Status_typedef			User_Status;
+	MCU_Status_typedef			MCU_Status;
+    
 	
-    int     SYS_Error;
-	float	MCU_Temp;
-	float	Output_Current_Cmd;
+	
+	
+	
+	
+	
 
 } Unit_Status_typedef ;
 
+extern osThreadId Link_TaskHandle;
+
 extern Unit_Status_typedef Unit_Status;
   
-
-extern void IPR_Init(void);
+void Registor_Update(void);
+void IPR_Init(void);
 void OPERATE_Process(void);
 void State_Process(void);
 void IDLE_Process(void);
@@ -106,6 +134,8 @@ void Input_Interface_Process(void);
 void Link_Manage_Process(void);
 
 
+void Link_TransmitISR(void);
+void Link_ReceiveISR(void);
 
 
 void MCU_PWR_Enable(int enable);

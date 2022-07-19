@@ -220,7 +220,7 @@ extern void ADS1247_Init(void);
 extern void ADS1247_Process(void);
 extern void ADS1247_Ready_Callback(void);
 extern void ADS1247_TxRxCpltCallback(void);
-extern float find_Approtch(float input,float* data_array , int len,float max,float min);
+extern double find_Approtch(double input,double* data_array , int len,float max,float min);
 
 
 

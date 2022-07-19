@@ -32,6 +32,7 @@
 #include "Link_Manager.h"
 #include "Link_Master_Driver.h"
 #include "Link_Slave_Driver.h"
+#include "iwdg.h"
 #include "usart.h"
 #include "gpio.h"
 #include "IPR100D30_Parameter.h"
@@ -63,13 +64,13 @@ osThreadId defaultTaskHandle;
 osThreadId ADS1247_TaskHandle;
 osThreadId ADC_TaskHandle;
 osThreadId Link_TaskHandle;
-osThreadId Test_TaskHandle;
+osThreadId Operate_TaskHandle;
 
 
 void ADS1247_TaskFunction(void const * argument);
 void ADC_TaskFunction(void const * argument);
 void Link_TaskFunction(void const * argument);
-void Test_TaskFunction(void const * argument);
+void Operate_TaskFunction(void const * argument);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -134,8 +135,8 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(Link_Task, Link_TaskFunction, osPriorityNormal, 0, 128);
   Link_TaskHandle = osThreadCreate(osThread(Link_Task), NULL);
   
-  osThreadDef(Test_Task, Test_TaskFunction, osPriorityNormal, 0, 128);
-  Test_TaskHandle = osThreadCreate(osThread(Test_Task), NULL);
+  osThreadDef(Operate_Task, Operate_TaskFunction, osPriorityNormal, 0, 128);
+  Operate_TaskHandle = osThreadCreate(osThread(Operate_Task), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -152,12 +153,13 @@ void StartDefaultTask(void const * argument)
   /* USER CODE BEGIN StartDefaultTask */
 	
 	
-	IPR_Init();
+	
 	
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	Registor_Update();
+	osDelay(10);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -179,6 +181,7 @@ void ADS1247_TaskFunction(void const * argument)
   for(;;)
   {
 	  ADS1247_Process();
+	  osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -209,13 +212,10 @@ void ADC_TaskFunction(void const * argument)
 void Link_TaskFunction(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-	Link_Master_Initial();
-	Link_Slave_Initial();
   /* Infinite loop */
   for(;;)
   {
-	  Link_Master_Process();
-	  Link_Slave_Process();
+	  Link_Manage_Process();
 	  osDelay(10);
   }
   /* USER CODE END StartDefaultTask */
@@ -226,15 +226,18 @@ void Link_TaskFunction(void const * argument)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void Test_TaskFunction(void const * argument)
+void Operate_TaskFunction(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-	uint8_t data_buffer[]={0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA};
+	
   /* Infinite loop */
   for(;;)
   {
-	  HAL_UART_Transmit_DMA(&huart5, data_buffer, 10);
-	  osDelay(100);
+	  State_Process();
+	  Input_Interface_Process();
+	  OPERATE_Process();
+	  HAL_IWDG_Refresh(&hiwdg);
+	  osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }

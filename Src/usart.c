@@ -44,13 +44,13 @@ void MX_UART5_Init(void)
 
   /* USER CODE END UART5_Init 1 */
   huart5.Instance = UART5;
-  huart5.Init.BaudRate = 115200;
+  huart5.Init.BaudRate = 460800;
   huart5.Init.WordLength = UART_WORDLENGTH_8B;
   huart5.Init.StopBits = UART_STOPBITS_1;
   huart5.Init.Parity = UART_PARITY_NONE;
   huart5.Init.Mode = UART_MODE_TX_RX;
   huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_8;
   if (HAL_UART_Init(&huart5) != HAL_OK)
   {
     Error_Handler();
@@ -86,6 +86,10 @@ void MX_USART1_UART_Init(void)
   }
   /* USER CODE BEGIN USART1_Init 2 */
 
+	RS485_Driver_RecevieMode();
+	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+  
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -295,23 +299,58 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	
-//	HAL_UART_AbortReceive(&RS485_huart2);
-//	HAL_UART_Receive_DMA(&RS485_huart2,Modbus_Receive_pkg.BUS_Array,100);
-	HAL_UART_AbortReceive(&huart1);
-	//analyze received messgae
-	if(ModbusRTU_analyze(&Modbus_Receive_pkg)==Driver_OK){
+	if (huart->Instance == USART1){
+			
+		HAL_UART_AbortReceive(&huart1);
+		//analyze received messgae
+		if(ModbusRTU_analyze(&Modbus_Receive_pkg)==Driver_OK){
+			
+			HAL_TIM_Base_Start_IT(&htim12);			//start the timer to count the waiting time and then repond the master
+			//HAL_UART_AbortReceive(&RS485_huart2);
+			Modbus_Respond(&Modbus_Receive_pkg,&Modbus_Transmit_pkg);	//data package
+			memset(Modbus_Receive_pkg.BUS_Array,0,100);
+		}else{
+			RS485_Driver_RecevieMode();
+			
+			memset(Modbus_Receive_pkg.BUS_Array,0,100);
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
 		
-		HAL_TIM_Base_Start_IT(&htim10);			//start the timer to count the waiting time and then repond the master
-		//HAL_UART_AbortReceive(&RS485_huart2);
-		Modbus_Respond(&Modbus_Receive_pkg,&Modbus_Transmit_pkg);	//data package
-		memset(Modbus_Receive_pkg.BUS_Array,0,100);
-	}else{
-		RS485_Driver_RecevieMode();
-		
-		memset(Modbus_Receive_pkg.BUS_Array,0,100);
-		HAL_UART_Receive_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+		}
 	
+	}else if (huart->Instance == UART5){
+		
+		if (Unit_Status.Link_Status.Link_Mode==MASTER){
+		
+			Link_ReceiveISR();
+		
+		}else{
+			
+			HAL_UART_AbortReceive(&huart5);
+			//analyze received messgae
+			if(Link_ModbusRTU_analyze(&Link_Receive_pkg)==Driver_OK){
+				
+				Unit_Status.Link_Status.Link_Connection=Connected;
+				__HAL_TIM_SET_COUNTER(&htim14,0);
+				HAL_TIM_Base_Start_IT(&htim14);
+				
+				HAL_TIM_Base_Start_IT(&htim13);			//start the timer to count the waiting time and then repond the master
+				//HAL_UART_AbortReceive(&RS485_huart2);
+				Link_Modbus_Respond(&Link_Receive_pkg,&Link_Transmit_pkg);	//data package
+				memset(Link_Receive_pkg.BUS_Array,0,100);
+			}else{
+				Link_RecevieMode();
+				
+				memset(Link_Receive_pkg.BUS_Array,0,100);
+				HAL_UARTEx_ReceiveToIdle_DMA(&huart5,Link_Receive_pkg.BUS_Array,100);
+			
+			}
+		
+		}
+		
+		
+		
 	}
+	
 	
 	
 
@@ -323,12 +362,36 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 	
+	if (huart->Instance == USART1){
+		
+		//Restart Receive process
+		//HAL_UART_AbortReceive(&RS485_huart2);
+		RS485_Driver_RecevieMode();
+		memset(Modbus_Receive_pkg.BUS_Array,0,100);
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
 	
-	//Restart Receive process
-	//HAL_UART_AbortReceive(&RS485_huart2);
-//	RS485_Driver_RecevieMode();
-//	memset(Modbus_Receive_pkg.BUS_Array,0,100);
-//	HAL_UART_Receive_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+	}else if (huart->Instance == UART5){
+		
+		if (Unit_Status.Link_Status.Link_Mode==MASTER){
+		
+			Link_TransmitISR();
+		
+		}else{
+		
+			//Restart Receive process
+			//HAL_UART_AbortReceive(&RS485_huart2);
+			
+			Link_RecevieMode();
+			memset(Link_Receive_pkg.BUS_Array,0,100);
+			HAL_UARTEx_ReceiveToIdle_DMA(&huart5,Link_Receive_pkg.BUS_Array,100);
+		
+		}
+		
+		
+		
+	
+	}
+	
 	
 }
 /**
@@ -338,10 +401,18 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
   *               reception buffer until which, data are available)
   * @retval None
   */
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
-{
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
+	
+	if (huart->Instance == USART1){
+		HAL_UART_RxCpltCallback(&huart1);
+	
+	}else if (huart->Instance == UART5){
+		HAL_UART_RxCpltCallback(&huart5);
+	
+	} 
+	
   /* Prevent unused argument(s) compilation warning */
-  HAL_UART_RxCpltCallback(&huart1);
+  
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_UARTEx_RxEventCallback can be implemented in the user file.
@@ -354,13 +425,27 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
 	
-	//Restart Receive process
-	UART_errorcounter++;
-	RS485_Driver_RecevieMode();
-	HAL_UART_AbortReceive(&huart1);
-	HAL_UART_Receive_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+	if (huart->Instance == USART1){
+		
+		//Restart Receive process
+		UART_errorcounter++;
+		RS485_Driver_RecevieMode();
+		HAL_UART_AbortReceive(&huart1);
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart1,Modbus_Receive_pkg.BUS_Array,100);
+	
+	}else if (huart->Instance == UART5){
+		
+		//Restart Receive process
+		UART_errorcounter++;
+		Link_RecevieMode();
+		HAL_UART_AbortReceive(&huart5);
+		HAL_UARTEx_ReceiveToIdle_DMA(&huart5,Link_Receive_pkg.BUS_Array,100);
+	
+	} 
 	
 }
+
+
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -53,7 +53,6 @@
 /* USER CODE BEGIN PV */
 int hard_fault;
 int test[10];
-uint16_t utest[10];
 float test_float[10];
 int UART_errorcounter;
 /* USER CODE END PV */
@@ -75,7 +74,7 @@ void MX_FREERTOS_Init(void);
   * @retval int
   */
 int main(void)
-{
+ {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -98,7 +97,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-//  MX_IWDG_Init();
+  MX_IWDG_Init();
   MX_SPI1_Init();
   MX_UART5_Init();
   MX_ADC1_Init();
@@ -116,6 +115,7 @@ int main(void)
   MX_TIM13_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
+  IPR_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

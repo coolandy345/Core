@@ -33,7 +33,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "modbusRTU.h"
-//#include "Link_Driver.h"
+#include "LinkbusRTU.h"
 #include "IPR100D30_Parameter.h"
 #include "typedef_struct.h"
 #include "cmsis_os.h"
@@ -66,7 +66,6 @@ extern int UART_errorcounter;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-//#define MASTER
 
 #define Analog_IN_FeedBack_s_Pin GPIO_PIN_3
 #define Analog_IN_FeedBack_s_GPIO_Port GPIOC
@@ -81,8 +80,8 @@ extern int UART_errorcounter;
 #define ADC_Start_GPIO_Port GPIOC
 #define ADC_Reset_Pin GPIO_PIN_0
 #define ADC_Reset_GPIO_Port GPIOB
-#define MCU_PWR_REM_Pin GPIO_PIN_2
-#define MCU_PWR_REM_GPIO_Port GPIOB
+#define MCU_PWR_REMOTE_Pin GPIO_PIN_2
+#define MCU_PWR_REMOTE_GPIO_Port GPIOB
 #define USER_ENABLE_Pin GPIO_PIN_10
 #define USER_ENABLE_GPIO_Port GPIOB
 #define SYSTEM_FAULT_Pin GPIO_PIN_11
@@ -96,8 +95,8 @@ extern int UART_errorcounter;
 #define MCU_NO_FAULT_GPIO_Port GPIOB
 #define MCU_PWR_ENABLE_Pin GPIO_PIN_15
 #define MCU_PWR_ENABLE_GPIO_Port GPIOB
-#define PWR_INTERLOCK_Pin GPIO_PIN_6
-#define PWR_INTERLOCK_GPIO_Port GPIOC
+#define PWR_INTERLOCK_INDICATION_Pin GPIO_PIN_6
+#define PWR_INTERLOCK_INDICATION_GPIO_Port GPIOC
 #define PWR_INTERLOCK_EXTI_IRQn EXTI9_5_IRQn
 #define PWR_FAULT_INDICATION_Pin GPIO_PIN_7
 #define PWR_FAULT_INDICATION_GPIO_Port GPIOC
@@ -106,13 +105,13 @@ extern int UART_errorcounter;
 #define Master_Select_GPIO_Port GPIOC
 #define CCCV_Select_Pin GPIO_PIN_9
 #define CCCV_Select_GPIO_Port GPIOC
-#define MODBUS_ADD_1_Pin GPIO_PIN_8
+#define MODBUS_ADD_1_Pin GPIO_PIN_11
 #define MODBUS_ADD_1_GPIO_Port GPIOA
-#define MODBUS_ADD_2_Pin GPIO_PIN_9
+#define MODBUS_ADD_2_Pin GPIO_PIN_10
 #define MODBUS_ADD_2_GPIO_Port GPIOA
-#define MODBUS_ADD_3_Pin GPIO_PIN_10
+#define MODBUS_ADD_3_Pin GPIO_PIN_9
 #define MODBUS_ADD_3_GPIO_Port GPIOA
-#define MODBUS_ADD_4_Pin GPIO_PIN_11
+#define MODBUS_ADD_4_Pin GPIO_PIN_8
 #define MODBUS_ADD_4_GPIO_Port GPIOA
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA

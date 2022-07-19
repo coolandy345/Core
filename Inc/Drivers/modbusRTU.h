@@ -12,7 +12,6 @@
 #define Modbus_Function_Multi_write 	0x10
 
 /*----------Modifly to each device-----------*/
-#define Device_address 0x77
 #define General_address 0xFF
 
 typedef struct
@@ -27,8 +26,8 @@ typedef struct
 	uint8_t 	CRC_High;
 	
 	uint8_t		BUS_length;
-	uint8_t 	BUS_Array[100];
-	uint8_t 	Data_Array[100];
+	uint8_t 	BUS_Array[200];
+	uint8_t 	Data_Array[200];
 	
 	uint8_t 	CRC_verify;
 	uint8_t 	Expired;

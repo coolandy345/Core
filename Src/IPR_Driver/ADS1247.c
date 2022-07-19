@@ -146,56 +146,78 @@ void ADS1247_Value_Process(void){
 	
 	if (ADC_Scan_POS==0){
 		ADC_Value[ADC_Scan_POS]=find_Approtch(ADC_24bit_Value[ADC_Scan_POS],CH0_Data,32,10,0);
-		Unit_Status.PWR_Status.Current=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Current_to_RealValue_Data,4,MAX_Current,MIN_Current);
+		Unit_Status.PWR_Status.Current=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Current_to_RealValue_Data,4,MAX_Unit_Current,MIN_Unit_Current);
 		
 	}else if(ADC_Scan_POS==1){
 		ADC_Value[ADC_Scan_POS]=find_Approtch(ADC_24bit_Value[ADC_Scan_POS],CH1_Data,32,10,0);
-		Unit_Status.PWR_Status.Voltage=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Voltage_to_RealValue_Data,8,MAX_Current,MIN_Voltage);
+		Unit_Status.PWR_Status.Voltage=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Voltage_to_RealValue_Data,8,MAX_Voltage,MIN_Voltage);
 		
 	}else if(ADC_Scan_POS==2){
 		ADC_Value[ADC_Scan_POS]=find_Approtch(ADC_24bit_Value[ADC_Scan_POS],CH2_Data,32,20,0);
-		Unit_Status.User_Status.User_Command=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_4_20_to_RealValue_Data,8,MAX_4_20,MIN_4_20);
-		
-		float data[2*2]={0,0,100,Unit_Status.User_Status.User_Limit};
-		Unit_Status.User_Status.User_Command_Current=find_Approtch(Unit_Status.User_Status.User_Command,data,4,MAX_Current,MIN_Current);
+		Unit_Status.User_Status.User_Command=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_4_20_to_RealValue_Data,8,MAX_4_20_Data_Uplimit,MIN_4_20_Data_Downlimit);
+		double data[2*2]={0,0,100,Unit_Status.User_Status.User_Limit_Current};
+		Unit_Status.User_Status.User_Command_Current=find_Approtch(Unit_Status.User_Status.User_Command,data,4,MAX_Sys_Current,MIN_Sys_Current);
 		
 	}else if(ADC_Scan_POS==3){
-		ADC_Value[ADC_Scan_POS]=find_Approtch(ADC_24bit_Value[ADC_Scan_POS],CH3_Data,24,5,0);
-		Unit_Status.User_Status.User_Limit=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Limit_to_RealValue_Data,4,MAX_Limit,MIN_Limit);
+		if(Unit_Status.Link_Status.Link_Mode==MASTER){
+			ADC_Value[ADC_Scan_POS]=find_Approtch(ADC_24bit_Value[ADC_Scan_POS],CH3_Data,24,5,0);
+			Unit_Status.User_Status.User_Limit=find_Approtch(ADC_Value[ADC_Scan_POS],Analog_Limit_to_RealValue_Data,4,MAX_Limit_Data_Uplimit,MIN_Limit_Data_Downlimit);
+			Unit_Status.User_Status.User_Limit_Current=Unit_Status.User_Status.User_Limit*MAX_Sys_Current/100;
+			
+		}else{
+			Unit_Status.User_Status.User_Limit=0;
+			Unit_Status.User_Status.User_Limit_Current=0;
+		
+		}
 		
 	}
+	
 		
 }
 
-float find_Approtch(float input,float* data_array , int len,float max,float min){
+double find_Approtch(double input,double* data_array , int len,float max,float min){
 	if (input<0xFFFFFF){
 		
 		int i=0;
 		int compare=0;
 		while(compare==0){
+			
 			if(data_array[i*2]>=input){
 				if (i==0){
-					return data_array[1];
+					double tmp = data_array[1];
+					if (tmp>=max){
+						return max;
+					}else if(tmp<=min){
+					
+						return min;
+					}else{
+						return tmp;
+					
+					}
 				}
 				compare=1;
 			}else{
 				i++;
 			}
 			if (i>=len){
-				return 0;
+				double tmp = data_array[len-1];
+				if (tmp>=max){
+					return max;
+				}else if(tmp<=min){
+				
+					return min;
+				}else{
+					return tmp;
+				
+				}
 			}
 		}
-//		test[0]=i;
 		
-		float gap=data_array[i*2]-data_array[i*2-2];
-//		test_float[0]=gap;
+		double gap=data_array[i*2]-data_array[i*2-2];
 		gap=(input-data_array[i*2-2])/gap;
-//		test_float[1]=gap;
 		
-		float tmp=((float)data_array[i*2+1]-(float)data_array[i*2-1])*gap;
-//		test_float[2]=tmp;
+		double tmp=((float)data_array[i*2+1]-(float)data_array[i*2-1])*gap;
 		tmp+=(float)data_array[i*2-1];
-//		test_float[3]=tmp;
 		
 		if (tmp>=max){
 		
